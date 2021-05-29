@@ -1,7 +1,7 @@
 #!/bin/bash
 # Parameters
-T=("4000")
-M_LIST=("3" "4000")
+T=("6000")
+M_LIST=("3" "6000")
 
 
 # Slurm parameters
