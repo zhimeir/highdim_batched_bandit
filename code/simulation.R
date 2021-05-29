@@ -21,7 +21,7 @@ s <- 50
 K <- 2
 amp <- 1 / sqrt(s)
 sigma <- 1
-gamma <- 0.05
+gamma <- 0.5
 
 ## The data-generating model
 set.seed(24601)
