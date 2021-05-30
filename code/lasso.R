@@ -35,8 +35,7 @@ theta <- 1:d %in% nonzero * amp
 y.sample <- function(X) X %*%  theta + sigma * rnorm(1)
 
 ## Generate the covariates
-X.sample <- function(seed){
-  set.seed(seed)
+X.sample <- function(i){
   x <- matrix(rnorm(K * d), K, d)
   return(x)
 }
