@@ -7,7 +7,7 @@ M <- as.integer(args[2])
 seed<- as.integer(args[3])
 
 ## Default arguments for debug
-if(is.na(T)) T <- 6000
+if(is.na(T)) T <- 4000
 if(is.na(M)) M <- 3
 if(is.na(seed)) seed <- 1
 
@@ -66,10 +66,10 @@ if(M < T){
     }else{
       grid_start <- grids[m-1]
     }
-    incre <- floor((grid_end - grid_start) / M)
+    incre <- floor((grid_end - grid_start) / (M - m))
 
     for (l in m:(M-1)){
-      batch_id[[l]] <- c(batch_id[[l]], (grid_start + incre * (l-1) + 1):(grid_start + incre  * l) )
+      batch_id[[l]] <- c(batch_id[[l]], (grid_start + incre * (l-m) + 1):(grid_start + incre  * (l - m + 1)) )
     }
   }
 
@@ -167,7 +167,7 @@ if(M < T){
 
 regret <- max_reward - reward 
 cum_regret <- cumsum(regret)
-#plot(cum_regret)
+## plot(cum_regret)
 output <- data.frame(max_reward = max_reward, reward = reward, cum_regret = cum_regret)
-out_file <- sprintf("../results/K%d_T%d_M%d_seed%d_gamma%.2f.txt", K, T, M, seed, gamma)
+out_file <- sprintf("../results/K%d_sigma%.2f_T%d_M%d_seed%d_gamma%.2f.txt", K, sigma, T, M, seed, gamma)
 write_delim(output, out_file)

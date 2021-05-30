@@ -149,5 +149,5 @@ cum_regret <- cumsum(regret)
 
 ## Store the results
 output <- data.frame(max_reward = max_reward, reward = reward, cum_regret = cum_regret)
-out_file <- sprintf("../results/K%d_T%d_M%d_seed%d_lasso.txt", K, T, M, seed)
+out_file <- sprintf("../results/K%d_sigma%.2f_T%d_M%d_seed%d_lasso.txt", K, sigma, T, M, seed)
 write_delim(output, out_file)
