@@ -20,7 +20,7 @@ d <- 6000
 s <- 50
 K <- 2
 amp <- 1 / sqrt(s)
-sigma <- 1
+sigma <- 0.5
 
 ## Hyper-parameters for the algorithm
 q <- 1              

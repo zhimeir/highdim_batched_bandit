@@ -13,3 +13,4 @@ SEED=$3
 ml R/3.5
 
 Rscript --vanilla simulation.R $T $M $SEED
+Rscript --vanilla lasso.R $T $M $SEED

@@ -20,8 +20,8 @@ d <- 6000
 s <- 50
 K <- 2
 amp <- 1 / sqrt(s)
-sigma <- 1
-gamma <- 1
+sigma <- 0.5
+gamma <- 0.5
 
 ## The data-generating model
 set.seed(24601)
