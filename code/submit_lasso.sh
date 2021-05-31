@@ -1,6 +1,6 @@
 #!/bin/bash
 # Parameters
-T=("6000")
+T=("8000")
 M_LIST=("3")
 
 
