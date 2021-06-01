@@ -22,6 +22,7 @@ K <- 2
 amp <- 1 / sqrt(s)
 sigma <- 0.5
 gamma <- 0.1
+sample_splitting <- FALSE
 
 ## The data-generating model
 set.seed(24601)
@@ -92,7 +93,11 @@ if(M < T){
         Y_train <- c(Y_train, y.sample(X[[t]][a,])) 
       }
     }else{
-      id <- batch_id[[m-1]]
+      if(sample_splitting){
+        id <- batch_id[[m-1]]
+      }else{
+        id <- 1:grids[m-1]
+      }
       ## Fit lasso w/ the realized data
       lambda <- gamma * sqrt(2 * log(K) *(log(d) + 2 * log(T))/length(id))
       lasso_mdl <- glmnet(X_train[id,], Y_train[id], standardize = FALSE, lambda = lambda)
@@ -164,9 +169,10 @@ if(M < T){
 }
 
 
-regret <- max_reward[1:(t-1)] - reward 
+regret <- max_reward - reward 
 cum_regret <- cumsum(regret)
-plot(cum_regret)
+## plot(cum_regret)
+##
 output <- data.frame(max_reward = max_reward, reward = reward, cum_regret = cum_regret)
 out_file <- sprintf("../results/K%d_sigma%.2f_T%d_M%d_seed%d_gamma%.2f.txt", K, sigma, T, M, seed, gamma)
 write_delim(output, out_file)

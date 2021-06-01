@@ -39,10 +39,10 @@ for(seed in 1:10){
     select(cum_regret) %>%
     mutate(M = "oracle-logistic", seed = seed, t = 1:T)
 
-  res_file <- sprintf("../results/warfarin_ols_seed%d.txt", seed)
+  res_file <- sprintf("../results/warfarin_lasso_seed%d.txt", seed)
   res5 <- read_delim(res_file, delim = " ", col_types = cols()) %>%
     select(cum_regret) %>%
-    mutate(M = "ols", seed = seed, t = 1:T)
+    mutate(M = "lasso", seed = seed, t = 1:T)
   
   res_file <- sprintf("../results/warfarin_doctor_seed%d.txt", seed)
   res6 <- read_delim(res_file, delim = " ", col_types = cols()) %>%
@@ -58,7 +58,7 @@ regret <- regret %>% group_by(M, t) %>%
                     labels = c("LBGL (M=3)", "LBGL (M=logT)", "Oracle-linear", "Oracle-logistic", "Lasso Bandits", "Doctor", "OLS Bandit"))) %>%
   filter(M != "Online")
  
-ind <- seq(300, 5400, by= 100)
+ind <- seq(100, 5500, by= 100)
 regret <- regret %>% filter(t %in% ind)
 
 pp <- ggplot(regret, aes(x=t, y = regret, group = M, col = M , fill = M)) +
@@ -72,8 +72,8 @@ pp <- ggplot(regret, aes(x=t, y = regret, group = M, col = M , fill = M)) +
   theme_font +
   theme(legend.position = c(0.8,0.8),
         legend.background = element_blank()) +
-  scale_color_manual(values = c("#1c84c6", "#1ab394", "#f8ac59", "#ed5565", "black", "gray")) +
-  scale_fill_manual(values = c("#1c84c6", "#1ab394", "#f8ac59", "#ed5565",  "black", "gray"))
+  scale_color_manual(values = c("#1c84c6", "#1ab394", "#f8ac59", "#ed5565", "brown")) +
+  scale_fill_manual(values = c("#1c84c6", "#1ab394", "#f8ac59", "#ed5565",  "brown"))
 
 out_file <- sprintf("../figs/warfarin.pdf")
 ggsave(out_file, pp, width = 10, height = 6)

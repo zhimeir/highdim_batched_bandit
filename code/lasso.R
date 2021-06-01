@@ -14,6 +14,7 @@ if(is.na(seed)) seed <- 1
 ## Load libraries
 suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(glmnet))
+suppressPackageStartupMessages(library(MASS))
 
 ## Parameters for the problems
 d <- 6000
@@ -48,7 +49,7 @@ max_reward <- lapply(X, function(xx) max(xx %*% theta)) %>% unlist()
 ## Determine the force-samping set
 force_id <- rep(0,T)
 for(k in 1:K){
-  for(n in 1:ceiling(log2(T))){
+  for(n in 0:ceiling(log2(T))){
     for(j in (q * (k-1) + 1): (q * k)){
       
       new_id <- (2^n - 1) * K * q + j
@@ -102,7 +103,8 @@ for(t in 1:T){
         lasso_mdl <- glmnet(X_all[est_id,], Y_all[est_id], standardize = FALSE, lambda = lambda1 / 2)
         est_reward_list[k] <- as.numeric(as.vector(t(X[[t]])) %*% lasso_mdl$beta)
       }else{
-        est_reward_list[k] <- 0
+        theta_est <- ginv(X_all[est_id,]) %*% Y_all[est_id]
+        est_reward_list[k] <- as.numeric(as.vector(t(X[[t]])) %*% theta_est 
       }
     }
 
@@ -117,7 +119,8 @@ for(t in 1:T){
         lasso_mdl <- glmnet(X_all[est_id,], Y_all[est_id], standardize = FALSE, lambda = lambda2 / 2)
         est_reward_list[k] <- as.numeric(as.vector(t(X[[t]])) %*% lasso_mdl$beta)
       }else{
-        est_reward_list[k] <- 0
+        theta_est <- ginv(X_all[est_id,]) %*% Y_all[est_id]
+        est_reward_list[k] <- as.numeric(as.vector(t(X[[t]])) %*% theta_est 
       }
     }
     a <- pre_set[which.max(est_reward_list[pre_set])]

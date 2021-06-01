@@ -19,6 +19,7 @@ lambda2_0 <- 0.05
 ## Load libraries
 suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(glmnet))
+suppressPackageStartupMessages(library(MASS))
 
 ## Read the dataset
 data <- read_csv("../datasets/warfarin.txt", col_names = FALSE)
@@ -36,9 +37,9 @@ X <- as.matrix(data[, 1:d])
 max_reward <- data$Y
 
 ## Determine the force-samping set
-force_id <- rep(0,T)
+force_id <- rep(0, T)
 for(k in 1:K){
-  for(n in 0:ceiling(log2(T/K/q))){
+  for(n in 0:ceiling(log2(T / K / q))){
     for(j in (q * (k-1) + 1): (q * k)){
       
       new_id <- (2^n - 1) * K * q + j
@@ -88,13 +89,15 @@ for(t in 1:T){
         var_y <- var(Y_all[est_id])
         var_x <- sum(apply(X_all[est_id,], 2, var))
         if(var_x * var_y >0){
-          lasso_mdl <- glmnet(X_all[est_id,], Y_all[est_id], standardize = FALSE, lambda = lambda1 / 2)
+          lasso_mdl <- glmnet(X_all[est_id,], Y_all[est_id], standardize = FALSE, lambda = lambda1 / 2, intercept = FALSE)
           theta_forced[[k]] <- lasso_mdl$beta
         }else{
-          theta_forced[[k]] <- solve(diag(rep(1,d)) + t(xs) %*% xs) %*% t(xs) %*% ys
+          ##           theta_forced[[k]] <- solve(diag(rep(1,d)) + t(xs) %*% xs) %*% t(xs) %*% ys
+          theta_forced[[k]] <- ginv(xs) %*% ys
         }
       }else{
-          theta_forced[[k]] <- solve(diag(rep(1,d)) + t(xs) %*% xs) %*% t(xs) %*% ys
+        ##           theta_forced[[k]] <- solve(diag(rep(1,d)) + t(xs) %*% xs) %*% t(xs) %*% ys
+        theta_forced[[k]] <- ginv(xs) %*% ys
       }
         est_reward_list[k] <- as.numeric(X[t,] %*% theta_forced[[k]])
 
@@ -113,13 +116,16 @@ for(t in 1:T){
         var_x <- sum(apply(X_all[est_id,], 2, var))
         var_y <- var(Y_all[est_id])
         if(var_x * var_y >0){
-          lasso_mdl <- glmnet(X_all[est_id,], Y_all[est_id], standardize = FALSE, lambda = lambda2 / 2)
+          lasso_mdl <- glmnet(X_all[est_id,], Y_all[est_id], standardize = FALSE, lambda = lambda2 / 2,
+          family = "gaussian", intercept = FALSE)
           theta_all[[k]] <- lasso_mdl$beta
         }else{
-          theta_all[[k]] <- solve(diag(rep(1,d)) + t(xs) %*% xs) %*% t(xs) %*% ys
+          ##           theta_all[[k]] <- solve(diag(rep(1,d)) + t(xs) %*% xs) %*% t(xs) %*% ys
+          theta_all[[k]] <- ginv(xs) %*% ys
         }
       }else{
-        theta_all[[k]] <- solve(diag(rep(1,d)) + t(xs) %*% xs) %*% t(xs) %*% ys
+        ##         theta_all[[k]] <- solve(diag(rep(1,d)) + t(xs) %*% xs) %*% t(xs) %*% ys
+        theta_all[[k]] <- ginv(xs) %*% ys
       }
         est_reward_list[k] <- as.numeric(X[t,] %*% theta_all[[k]])
     }
@@ -147,7 +153,7 @@ for(t in 1:T){
 
 regret <- -reward
 cum_regret <- cumsum(regret) / (1:T)
-plot(cum_regret)
+## plot(cum_regret)
 
 output <- data.frame(max_reward = max_reward, reward = reward, cum_regret = cum_regret)
 out_file <- sprintf("../results/warfarin_lasso_seed%d.txt", seed)

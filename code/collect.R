@@ -28,10 +28,10 @@ for(seed in 1:30){
     select(cum_regret) %>%
     mutate(M = 3, seed = seed, t = 1:T)
 
-  res_file <- sprintf("../results/K%d_sigma%.2f_T%d_M%d_seed%d_gamma%.2f.txt", K, sigma, T, 5, seed, gamma)
+  res_file <- sprintf("../results/K%d_sigma%.2f_T%d_M%d_seed%d_gamma%.2f.txt", K, sigma, T, 2, seed, 0.1)
   res2 <- read_delim(res_file, delim = " ", col_types = cols()) %>%
     select(cum_regret) %>%
-    mutate(M = 5, seed = seed, t = 1:T)
+    mutate(M = 2, seed = seed, t = 1:T)
   
   res_file <- sprintf("../results/K%d_sigma%.2f_T%d_M%d_seed%d_gamma%.2f.txt", K, sigma, T, T, seed, gamma)
   res3 <- read_delim(res_file, delim = " ", col_types = cols()) %>%
@@ -48,7 +48,7 @@ for(seed in 1:30){
 
 regret <- regret %>% filter(M != 5) %>% group_by(M, t) %>%
   summarise(regret = mean(cum_regret), lo = regret - sqrt(var(cum_regret)) * 1.96 / sqrt(30), hi = regret + sqrt(var(cum_regret)) *1.96 /sqrt(30)) %>%
-  mutate(M = factor(M, levels = c(3, 5, T, "LASSO bandit"), labels = c("LBGL (M=3)", "LBGL (M=5)", "LBGL (M=T)", "LASSO Bandit")))
+  mutate(M = factor(M, levels = c(3, 2, T, "LASSO bandit"), labels = c("LBGL (M=3)", "LBGL (M=2)", "LBGL (M=T)", "LASSO Bandit")))
 
 regret <- regret %>% filter(t %in% seq(100, T, by = 100))
 

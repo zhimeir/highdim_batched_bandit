@@ -46,7 +46,7 @@ max_reward <- lapply(X, function(xx) max(xx %*% theta)) %>% unlist()
 ## Determine the force-samping set
 force_id <- rep(0,T)
 for(k in 1:K){
-  for(n in 1:ceiling(log2(T))){
+  for(n in 0:ceiling(log2(T))){
     for(j in (q * (k-1) + 1): (q * k)){
       
       new_id <- (2^n - 1) * K * q + j
@@ -72,8 +72,11 @@ reward <- c()
 X_all <- c()
 Y_all <- c()
 a_record <- c()
+record_forced <- 0
+record_all <- 0
 
 for(t in 1:T){
+  if(t %% 10 == 1) cat(sprintf("At step %d...\n", t))
   if(force_id[t] != 0){
     a <- force_id[t]
     
@@ -94,9 +97,23 @@ for(t in 1:T){
       est_id <- which(force_id == k)
       est_id <- est_id[est_id <= t-1]
       if(length(est_id) > 1){
+
         xs <- X_all[est_id,]
         ys <- Y_all[est_id]
-        theta_hat <- solve(diag(rep(1, K * d)) + t(xs) %*% xs) %*% t(xs) %*% ys
+
+        if(record_forced == 0){
+
+          ## The first time to compute the inverse matrix
+          invx <- solve(diag(rep(1, K * d)) + t(xs) %*% xs) 
+          record_forced <- 1
+
+        }else{
+          ## Update the inverse matrix with the Sherman-Morrison formula
+          denom <- as.numeric(1 + t(X_all[t-1, ]) %*% invx %*% X_all[t-1, ])
+          vec_tmp <- invx %*% X_all[t-1,]
+          invx <- invx - vec_tmp %*% t(vec_tmp) / denom
+        }
+        theta_hat <- invx %*% t(xs) %*% ys
       }else{
         theta_hat <- rep(0,K * d)
       }
@@ -113,7 +130,18 @@ for(t in 1:T){
         xs <- X_all[est_id,]
         ys <- Y_all[est_id]
         if(length(est_id) > 1){
-          theta_hat <- solve(diag(rep(1, K * d)) + t(xs) %*% xs) %*% t(xs) %*% ys
+          if(record_all == 0){
+
+            ## The first time to compute the inverse matrix
+            ainvx <- solve(diag(rep(1, K * d)) + t(xs) %*% xs) 
+            record_all <- 1
+          }else{
+            ## Update the inverse matrix with the Sherman-Morrison formula
+            denom <- as.numeric(1 + t(X_all[t-1, ]) %*% ainvx %*% X_all[t-1, ])
+            vec_tmp <- ainvx %*% X_all[t-1,] 
+            ainvx <- ainvx - vec_tmp %*% t(vec_tmp) / denom
+          }
+          theta_hat <- ainvx %*% t(xs) %*% ys
         }else{
           theta_hat <- rep(0, K * d)
         }
