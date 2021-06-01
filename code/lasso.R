@@ -77,6 +77,7 @@ Y_all <- c()
 a_record <- c()
 
 for(t in 1:T){
+  if(t %% 10 == 1) cat(sprintf("At step %d...\n", t))
   if(force_id[t] != 0){
     a <- force_id[t]
     

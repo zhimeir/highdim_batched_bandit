@@ -1,6 +1,6 @@
 #!/bin/bash
 # Parameters
-T=("4000")
+T_LIST=("4000" "6000")
 M_LIST=("3")
 
 
@@ -18,23 +18,67 @@ LOGS="logs"
 mkdir -p $LOGS
 
 # Script to be run
-for M in "${M_LIST[@]}"; do 
-  for SEED in {1..30}; do
-  SCRIPT="lasso.sh $T $M $SEED"
+for T in "${T_LIST[@]}"; do
+  for M in "${M_LIST[@]}"; do 
+    for SEED in {1..30}; do
+
+
+      # Submit Lasso
+      
+      SCRIPT="lasso.sh $T $M $SEED"
   
-  # Define job name for this chromosome
-  JOBN="lasso-"$T"-"$M"-"$SEED
-  OUTF=$LOGS"/"$JOBN".out"
-  ERRF=$LOGS"/"$JOBN".err"
+  
+      # Define job name for this chromosome
+  
+      JOBN="lasso-"$T"-"$M"-"$SEED
+  
+      OUTF=$LOGS"/"$JOBN".out"
+  
+      ERRF=$LOGS"/"$JOBN".err"
 
-  # Assemble slurm order for this job
-  ORD=$ORDP" -J "$JOBN" -o "$OUTF" -e "$ERRF" "$SCRIPT
+  
+      # Assemble slurm order for this job
+  
+      ORD=$ORDP" -J "$JOBN" -o "$OUTF" -e "$ERRF" "$SCRIPT
 
-  #Print order
-  echo $ORD
+  
+      #Print order
+  
+      echo $ORD
 
-  # Submit order
-  $ORD
+  
+      # Submit order
+  
+      $ORD
+      
+      # Submit ols
+      
+      SCRIPT="ols.sh $T $M $SEED"
+  
+  
+      # Define job name for this chromosome
+  
+      JOBN="ols-"$T"-"$M"-"$SEED
+  
+      OUTF=$LOGS"/"$JOBN".out"
+  
+      ERRF=$LOGS"/"$JOBN".err"
+
+  
+      # Assemble slurm order for this job
+  
+      ORD=$ORDP" -J "$JOBN" -o "$OUTF" -e "$ERRF" "$SCRIPT
+
+  
+      #Print order
+  
+      echo $ORD
+
+  
+      # Submit order
+  
+      $ORD
+    done
   done
 done
  

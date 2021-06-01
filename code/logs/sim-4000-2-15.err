@@ -1,3 +1,0 @@
-Warning message:
-In max_reward[1:(t - 1)] - reward :
-  longer object length is not a multiple of shorter object length
