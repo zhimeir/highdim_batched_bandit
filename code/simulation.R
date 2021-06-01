@@ -21,7 +21,7 @@ s <- 50
 K <- 2
 amp <- 1 / sqrt(s)
 sigma <- 0.5
-gamma <- 0.5
+gamma <- 0.1
 
 ## The data-generating model
 set.seed(24601)
@@ -164,9 +164,9 @@ if(M < T){
 }
 
 
-regret <- max_reward - reward 
+regret <- max_reward[1:(t-1)] - reward 
 cum_regret <- cumsum(regret)
-## plot(cum_regret)
+plot(cum_regret)
 output <- data.frame(max_reward = max_reward, reward = reward, cum_regret = cum_regret)
 out_file <- sprintf("../results/K%d_sigma%.2f_T%d_M%d_seed%d_gamma%.2f.txt", K, sigma, T, M, seed, gamma)
 write_delim(output, out_file)
