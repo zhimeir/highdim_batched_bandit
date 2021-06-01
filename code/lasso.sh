@@ -12,4 +12,4 @@ SEED=$3
 ##############
 ml R/3.5
 
-Rscript --vanilla lasso.R $T $M $SEED
+Rscript --vanilla ols.R $T $M $SEED
