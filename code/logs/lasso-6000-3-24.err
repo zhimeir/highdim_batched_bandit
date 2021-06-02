@@ -1,1 +1,4 @@
-slurmstepd: error: *** JOB 25572983 ON sh02-04n67 CANCELLED AT 2021-06-01T14:09:17 ***
+Error: unexpected '}' in:
+"        est_reward_list[k] <- as.numeric(as.vector(t(X[[t]])) %*% theta_est 
+      }"
+Execution halted

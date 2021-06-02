@@ -1,0 +1,4 @@
+Error: unexpected '}' in:
+"        est_reward_list[k] <- as.numeric(as.vector(t(X[[t]])) %*% theta_est 
+      }"
+Execution halted
