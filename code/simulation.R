@@ -40,6 +40,7 @@ X <- lapply(1:T, X.sample)
 max_reward <- lapply(X, function(xx) max(xx %*% theta)) %>% unlist()
 
 ## Initialization
+ptm <- proc.time()
 reward <- c()
 
 if(M < T){
@@ -168,7 +169,7 @@ if(M < T){
 
 }
 
-
+proc.time() - ptm
 regret <- max_reward - reward 
 cum_regret <- cumsum(regret)
 ## plot(cum_regret)

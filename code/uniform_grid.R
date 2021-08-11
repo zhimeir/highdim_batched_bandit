@@ -2,59 +2,53 @@
 
 ## Process the input argument 
 args <- commandArgs(trailingOnly = TRUE)
-M<- as.integer(args[1])
-seed<- as.integer(args[2])
+T <- as.integer(args[1])
+M <- as.integer(args[2])
+seed<- as.integer(args[3])
 
 ## Default arguments for debug
+if(is.na(T)) T <- 4000
 if(is.na(M)) M <- 3
 if(is.na(seed)) seed <- 1
-
-## Parameters
-gamma <- 0.01
-s <- 20
-K <- 3
-sample_split <- FALSE
 
 ## Load libraries
 suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(glmnet))
 
-## Read the dataset
-data <- read_csv("../datasets/warfarin.txt", col_names = FALSE, col_types = cols())
-T <- nrow(data)
-d <- ncol(data) - 1
+## Parameters
+d <- 6000
+s <- 50
+K <- 2
+amp <- 1 / sqrt(s)
+sigma <- 0.5
+gamma <- 0.1
+sample_splitting <- FALSE
 
-## Randomly permute the data
-set.seed(seed)
-new_order <- sample(1:T, T, replace = FALSE)
-data <- data[new_order,]
-names(data) <- c(paste0("X",1:d), "Y")
+## The data-generating model
+set.seed(24601)
+nonzero <- sample(d, s, replace = FALSE)
+theta <- 1:d %in% nonzero * amp
+y.sample <- function(X) X %*%  theta + sigma * rnorm(1)
 
-## Extract X and the optimal reward
-X <- rep(list(c()), length = T)
-for(t in 1:T){
-  xt <- as.matrix(data[t,-(d+1)])
-  dt <- matrix(0, nrow = 3, ncol = 3 * d)
-  dt[1,1:d] <- xt
-  dt[2,(d+1):(2 * d)] <- xt
-  dt[3,(2*d + 1):(3 * d)] <- xt
-  X[[t]] <- dt
+## Generate the covariates
+X.sample <- function(i){
+  x <- matrix(rnorm(K * d), K, d)
+  return(x)
 }
-max_reward <- as.matrix(data[,d + 1])
-d <- 3 * d
+set.seed(seed)
+X <- lapply(1:T, X.sample)
+max_reward <- lapply(X, function(xx) max(xx %*% theta)) %>% unlist()
 
 ## Initialization
-reward <- c()
 ptm <- proc.time()
-if(M < T){
-  ## Initialize b
-  b <- sqrt(T) * (T / s)^(1 / 2 / (2^M-1)) 
+reward <- c()
 
+if(M < T){
   ## Determine the grids (t_1,t_2,...,t_M)
   grids <- c() 
   t_tmp <- s
   for(m in 1:M){
-    grids <- c(grids, ceiling(sqrt(t_tmp) * b))
+    grids <- c(grids, ceiling(T / M * m))
     t_tmp <- grids[m] 
   }
   grids <- pmin(grids, T)
@@ -89,15 +83,15 @@ if(M < T){
         a <- sample(1:K, 1)
         
         ## Record the regret
-        ins_reward <- -(a-1 != max_reward[t])
+        ins_reward <- X[[t]][a,] %*% theta
         reward <- c(reward, ins_reward)
 
         ## Record the realized data
         X_train <- rbind(X_train, X[[t]][a,])
-        Y_train <- c(Y_train, ins_reward) 
+        Y_train <- c(Y_train, y.sample(X[[t]][a,])) 
       }
     }else{
-      if(sample_split){
+      if(sample_splitting){
         id <- batch_id[[m-1]]
       }else{
         id <- 1:grids[m-1]
@@ -115,12 +109,12 @@ if(M < T){
         a <- random_order[a]
 
         ## Record the regret
-        ins_reward <- -(a-1 != max_reward[t])
+        ins_reward <- X[[t]][a,] %*% theta
         reward <- c(reward, ins_reward)
 
         ## Record the realized data
         X_train <- rbind(X_train, X[[t]][a,])
-        Y_train <- c(Y_train, ins_reward) 
+        Y_train <- c(Y_train, y.sample(X[[t]][a,])) 
       }
     }
 
@@ -133,17 +127,17 @@ if(M < T){
   ## Loop through the t steps
   for(t in 1:T){
     
-    if(t <= 20){
+    if(t <= 5){
       ## Randomly choose an arm
       a <- sample(1:K, 1)
       
       ## Record the regret
-      ins_reward <- -(a-1 != max_reward[t])
+      ins_reward <- X[[t]][a,] %*% theta
       reward <- c(reward, ins_reward)
 
       ## Record the realized data
       X_train <- rbind(X_train, X[[t]][a,])
-      Y_train <- c(Y_train, ins_reward) 
+      Y_train <- c(Y_train, y.sample(X[[t]][a,])) 
 
     }else{
       ## Fit lasso w/ the realized data
@@ -159,12 +153,12 @@ if(M < T){
       a <- random_order[a]
 
       ## Record the regret
-      ins_reward <- -(a-1 != max_reward[t])
+      ins_reward <- X[[t]][a,] %*% theta
       reward <- c(reward, ins_reward)
       
       ## Record the realized data
       X_train <- rbind(X_train, X[[t]][a,])
-      Y_train <- c(Y_train, ins_reward) 
+      Y_train <- c(Y_train, y.sample(X[[t]][a,])) 
 
     }    
 
@@ -173,16 +167,10 @@ if(M < T){
 }
 
 proc.time() - ptm
-regret <- -reward
-cum_regret <- cumsum(regret) / (1:T)
+regret <- max_reward - reward 
+cum_regret <- cumsum(regret)
 ## plot(cum_regret)
-
+##
 output <- data.frame(max_reward = max_reward, reward = reward, cum_regret = cum_regret)
-out_file <- sprintf("../results/warfarin_M%d_seed%d_gamma%.2f.txt", M, seed, gamma)
+out_file <- sprintf("../results/K%d_sigma%.2f_T%d_M%d_seed%d_gamma%.2f_uniform.txt", K, sigma, T, M, seed, gamma)
 write_delim(output, out_file)
-
-
-
-
-
-

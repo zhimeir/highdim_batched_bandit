@@ -53,6 +53,7 @@ for(k in 1:K){
 }
 
 ## The lasso bandit
+ptm <- proc.time()
 ## Initialization
 reward <- c()
 X_all <- c()
@@ -149,7 +150,7 @@ for(t in 1:T){
   }
 
 }
-
+proc.time()-ptm
 
 regret <- -reward
 cum_regret <- cumsum(regret) / (1:T)
