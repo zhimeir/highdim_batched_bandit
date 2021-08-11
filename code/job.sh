@@ -12,4 +12,4 @@ SEED=$3
 ##############
 ml R/3.5
 
-Rscript --vanilla simulation.R $T $M $SEED
+Rscript --vanilla uniform_grid.R $T $M $SEED
